@@ -65,6 +65,27 @@ class TestEuler(unittest.TestCase):
         Dif = np.abs(euler_np - euler_tf)
         self.assertAlmostEqual(0., np.max(Dif), places=5)
 
+    def test_quat2euler(self):
+        batchsize = 1024
+        euler = (rnd.random(size=(batchsize, 3)) - 0.5) * 2 * m.pi
+        Q_np = []
+        for i in range(batchsize):
+            Q = transforms3d.euler.euler2quat(*euler[i], axes='sxyz')
+            Q_np.append(Q)
+        Q_np = np.array(Q_np, dtype=np.float32)
+
+        euler_np = []
+        for i in range(batchsize):
+            eul = transforms3d.euler.quat2euler(Q_np[i])
+            euler_np.append(eul)
+        euler_np = np.array(euler_np, dtype=np.float32)
+
+        euler_tf = ELR.quat2euler(Q_np)
+
+        Dif = np.abs(euler_tf - euler_np)
+        self.assertAlmostEqual(0., np.max(Dif), places=4)
+
+
 
 if __name__ == '__main__':
     unittest.main()

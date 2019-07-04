@@ -1,5 +1,6 @@
 import tensorflow as tf
 import math as m
+from tf_transforms3d.quaternions import quat2mat
 
 
 def similarity(r1, r2):
@@ -19,11 +20,9 @@ def similarity(r1, r2):
 
 def quat2euler(Q):
     """
-    we only support sxyz
-    convert a batch of quaternions to euler angles
     :param Q: (n_batch x 4)
     """
-
+    return mat2euler(quat2mat(Q))
 
 
 def euler2quat(r):
