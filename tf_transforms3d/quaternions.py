@@ -32,11 +32,13 @@ def mat2quat(M):
 
     vals, vecs = tf.linalg.eigh(K)
     largest_eigv = 3
-    q0 = vecs[:, 3, largest_eigv]  # q * -1 and q correspond to same rotation
+    q0 = vecs[:, 3, largest_eigv]
     qi = vecs[:, 0, largest_eigv]
     qj = vecs[:, 1, largest_eigv]
     qk = vecs[:, 2, largest_eigv]
 
+    # q * -1 and q correspond to same rotation
+    # wow.. this is ugly...
     qi = tf.where(tf.greater_equal(q0, 0.), qi, -qi)
     qj = tf.where(tf.greater_equal(q0, 0.), qj, -qj)
     qk = tf.where(tf.greater_equal(q0, 0.), qk, -qk)
