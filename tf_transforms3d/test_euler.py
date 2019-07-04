@@ -10,8 +10,24 @@ import tf_transforms3d.euler as ELR
 
 class TestEuler(unittest.TestCase):
 
+    def test_euler2quat(self):
+        batchsize = 1024
+        euler = (rnd.random(size=(batchsize, 3)) - 0.5) * 2 * m.pi
+        euler = euler.astype('float32')
+        Q_np = []
+        for i in range(batchsize):
+            Q = transforms3d.euler.euler2quat(*euler[i], axes='sxyz')
+            Q_np.append(Q)
+        Q_np = np.array(Q_np)
+        Q_tf = ELR.euler2quat(euler)
+        Dif = np.abs(Q_np - Q_tf)
+        N = np.linalg.norm(Q_tf, axis=1)
+        self.assertAlmostEqual(1., np.min(N), places=4)
+        self.assertAlmostEqual(1., np.max(N), places=4)
+        self.assertAlmostEqual(0., np.max(Dif), places=5)
+
     def test_euler2mat(self):
-        batchsize = 128
+        batchsize = 1024
         euler = (rnd.random(size=(batchsize, 3)) - 0.5) * 2 * m.pi
         euler = euler.astype('float32')
         R_np = []
@@ -19,12 +35,9 @@ class TestEuler(unittest.TestCase):
             R = transforms3d.euler.euler2mat(*euler[i], axes='sxyz')
             R_np.append(R)
         R_np = np.array(R_np)
-
         R_tf = ELR.euler2mat(euler)
         Dif = np.abs(R_np - R_tf)
-
         ELR.mat2euler(R_tf)
-        
         self.assertAlmostEqual(0., np.max(Dif), places=5)
     
     def test_mat2euler(self):
@@ -41,8 +54,7 @@ class TestEuler(unittest.TestCase):
         ELR.mat2euler(R_tf)
         self.assertAlmostEqual(0., np.max(Dif), places=5)
 
-        ax, ay, az = ELR.mat2euler(R_tf)
-        euler_tf = tf.transpose(tf.stack([ax, ay, az]))
+        euler_tf = ELR.mat2euler(R_tf)
 
         euler_np = []
         for i in range(batchsize):

@@ -17,6 +17,53 @@ def similarity(r1, r2):
     return distance
 
 
+def quat2euler(Q):
+    """
+    we only support sxyz
+    convert a batch of quaternions to euler angles
+    :param Q: (n_batch x 4)
+    """
+
+
+
+def euler2quat(r):
+    """
+    we only support sxyz
+    convert a batch of euler angles to quaternions
+    :param r: (n_batch x 3)
+    """
+    ai = r[:, 0]
+    aj = r[:, 1]
+    ak = r[:, 2]
+
+    i = 1
+    j = 2
+    k = 3
+
+    ai = ai/2.0
+    aj = aj/2.0
+    ak = ak/2.0
+
+    ci = tf.cos(ai)
+    si = tf.sin(ai)
+    cj = tf.cos(aj)
+    sj = tf.sin(aj)
+    ck = tf.cos(ak)
+    sk = tf.sin(ak)
+    cc = ci * ck
+    cs = ci * sk
+    sc = si * ck
+    ss = si * sk
+
+    q0 = cj * cc + sj * ss
+    qi = cj * sc - sj * cs
+    qj = cj * ss + sj * cc
+    qk = cj * cs - sj * sc
+
+    q = tf.transpose(tf.stack([q0, qi, qj, qk]))
+    return q
+
+
 def euler2mat(r):
     """
     we only support sxyz
@@ -55,7 +102,7 @@ def euler2mat(r):
 
 def mat2euler(M):
     """
-    we only support ('sxyz': (0, 0, 0, 0))
+    we only support sxyz
     :param M: (n_batch x 3 x 3)
     """
     eps = tf.constant(0.00001)
@@ -71,5 +118,5 @@ def mat2euler(M):
     az = tf.where(tf.greater_equal(cy, eps),
                   tf.atan2(M[:, j, i], M[:, i, i]),
                   .0)
-
-    return ax, ay, az
+    r = tf.transpose(tf.stack([ax, ay, az]))
+    return r
